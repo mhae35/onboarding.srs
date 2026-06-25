@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SNC Client Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0B1628;
+    --navy-mid: #152238;
+    --gold: #C9A84C;
+    --gold-light: #E8D08A;
+    --white: #FFFFFF;
+    --slate: #8A9BB0;
+    --slate-light: #C4CDD8;
+    --bg: #F7F9FC;
+    --bg-card: #FFFFFF;
+    --text: #0B1628;
+    --text-soft: #4A5568;
+    --border: #E2E8F0;
+    --success: #2D7A4F;
+    --success-bg: #E8F5EE;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── TOP NAV ── */
+  .topbar {
+    background: var(--navy);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+  .topbar-logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 20px;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+  .topbar-logo span { color: var(--gold); }
+  .topbar-tagline {
+    font-size: 11px;
+    color: var(--slate);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrapper {
+    background: var(--navy-mid);
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .progress-steps {
+    display: flex;
+    max-width: 680px;
+    margin: 0 auto;
+    overflow-x: auto;
+  }
+  .step-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 8px;
+    cursor: pointer;
+    position: relative;
+    min-width: 80px;
+    transition: opacity 0.2s;
+  }
+  .step-item::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1px;
+    width: 100%;
+    background: rgba(255,255,255,0.1);
+    z-index: 0;
+  }
+  .step-item:last-child::after { display: none; }
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--slate);
+    background: var(--navy-mid);
+    position: relative;
+    z-index: 1;
+    transition: all 0.25s;
+    margin-bottom: 6px;
+  }
+  .step-label {
+    font-size: 10px;
+    color: var(--slate);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    transition: color 0.25s;
+  }
+  .step-item.active .step-dot {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy);
+  }
+  .step-item.active .step-label { color: var(--gold); }
+  .step-item.done .step-dot {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+  }
+  .step-item.done .step-label { color: #6FCF97; }
+
+  /* ── PAGE SHELL ── */
+  .page { display: none; padding: 40px 20px 80px; animation: fadeUp 0.35s ease; }
+  .page.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .container { max-width: 680px; margin: 0 auto; }
+
+  /* ── PAGE HEADER ── */
+  .page-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .page-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(26px, 5vw, 38px);
+    line-height: 1.15;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .page-title em { font-style: italic; color: var(--gold); }
+  .page-desc {
+    color: var(--text-soft);
+    font-size: 15px;
+    max-width: 520px;
+    margin-bottom: 36px;
+    line-height: 1.7;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--navy);
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── NDA DOCUMENT ── */
+  .nda-doc {
+    background: #FAFBFC;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    max-height: 340px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-soft);
+    line-height: 1.8;
+  }
+  .nda-doc h3 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 17px;
+    color: var(--navy);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .nda-doc p { margin-bottom: 12px; }
+  .nda-doc ol { padding-left: 20px; margin-bottom: 12px; }
+  .nda-doc li { margin-bottom: 8px; }
+  .nda-doc strong { color: var(--navy); font-weight: 600; }
+  .nda-scroll-notice {
+    text-align: center;
+    font-size: 12px;
+    color: var(--slate);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .form-group { margin-bottom: 18px; }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+  }
+  .form-label span { color: var(--gold); }
+  .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--navy);
+    background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .form-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  }
+
+  /* ── SIGNATURE PAD ── */
+  .sig-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+    background: #FAFBFC;
+    position: relative;
+  }
+  .sig-label-inside {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    color: var(--slate-light);
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.2s;
+  }
+  #sigCanvas { display: block; cursor: crosshair; touch-action: none; }
+  .sig-clear {
+    font-size: 11px;
+    color: var(--slate);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    float: right;
+    text-decoration: underline;
+    font-family: 'Inter', sans-serif;
+  }
+  .sig-clear:hover { color: var(--navy); }
+  .sig-actions { padding: 6px 8px 8px; background: var(--white); }
+
+  /* ── CHECKBOX ── */
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    background: #F7F9FC;
+    border-radius: 7px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .checkbox-row input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: var(--gold);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .checkbox-row label { font-size: 13px; color: var(--text-soft); cursor: pointer; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .btn-primary:hover { background: #B8943C; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,168,76,0.3); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-outline {
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--navy); }
+  .btn-navy {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .btn-navy:hover { background: #0F1E35; transform: translateY(-1px); }
+  .btn-full { width: 100%; }
+
+  /* ── PACKAGES ── */
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .package-card {
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--white);
+  }
+  .package-card:hover { border-color: var(--gold-light); }
+  .package-card.selected {
+    border-color: var(--gold);
+    background: #FEFBF2;
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+  }
+  .package-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 8px;
+  }
+  .package-name {
+    font-family: 'Instrument Serif', serif;
+    font-size: 20px;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .package-price {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .package-features { list-style: none; }
+  .package-features li {
+    font-size: 12px;
+    color: var(--text-soft);
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .package-features li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--slate-light);
+    font-size: 10px;
+  }
+  .package-selected-mark {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .package-card.selected .package-selected-mark { display: flex; }
+  .package-selected-mark svg { width: 11px; height: 11px; }
+
+  /* ── STRATEGY SECTION ── */
+  .strategy-embed-msg {
+    text-align: center;
+    padding: 48px 24px;
+  }
+  .strategy-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+  .strategy-embed-msg h3 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 24px;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .strategy-embed-msg p {
+    color: var(--text-soft);
+    font-size: 14px;
+    max-width: 380px;
+    margin: 0 auto 24px;
+    line-height: 1.7;
+  }
+  .what-happens {
+    background: var(--navy);
+    border-radius: 10px;
+    padding: 24px;
+    margin-top: 24px;
+    color: var(--white);
+  }
+  .what-happens-title {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .what-step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .what-step:last-child { margin-bottom: 0; }
+  .what-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .what-text { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+  .what-text strong { color: var(--white); font-weight: 500; }
+
+  /* ── CLIENT PORTAL ── */
+  .portal-lookup {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .portal-lookup .form-input { flex: 1; }
+  .status-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .status-header {
+    background: var(--navy);
+    padding: 14px 20px;
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-rows { background: var(--white); }
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-key { color: var(--text-soft); }
+  .status-val { font-weight: 600; color: var(--navy); }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-done { background: var(--success-bg); color: var(--success); }
+  .badge-pending { background: #FFF8E7; color: #92640A; }
+  .badge-waiting { background: #F0F4FF; color: #3B5BDB; }
+
+  /* ── HOME ── */
+  .home-hero {
+    background: var(--navy);
+    border-radius: 14px;
+    padding: 44px 36px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .home-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+  }
+  .home-hero-tag {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .home-hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .home-hero h1 em { color: var(--gold); font-style: italic; }
+  .home-hero p {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+  .flow-steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 480px) { .flow-steps { grid-template-columns: 1fr; } }
+  .flow-step-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .flow-step-card:hover { border-color: var(--gold); box-shadow: 0 2px 12px rgba(201,168,76,0.12); transform: translateY(-1px); }
+  .flow-step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .flow-step-num { font-size: 10px; font-weight: 700; color: var(--gold); margin-bottom: 2px; letter-spacing: 0.05em; }
+  .flow-step-name { font-weight: 600; font-size: 14px; color: var(--navy); margin-bottom: 2px; }
+  .flow-step-desc { font-size: 12px; color: var(--text-soft); }
+  .flow-arrow {
+    text-align: center;
+    color: var(--slate-light);
+    font-size: 18px;
+    margin: -4px 0;
+    display: none;
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--navy);
+    color: white;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    border-left: 3px solid var(--gold);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── SUCCESS STATE ── */
+  .success-banner {
+    background: var(--success-bg);
+    border: 1px solid #B2DFCC;
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .success-icon { font-size: 24px; }
+  .success-text strong { display: block; color: var(--success); font-size: 14px; margin-bottom: 2px; }
+  .success-text span { color: var(--text-soft); font-size: 13px; }
+
+  /* ── UTILITY ── */
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .hidden { display: none !important; }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+  @media (max-width: 480px) { .row { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topbar">
+  <div class="topbar-logo">SNC<span>.</span></div>
+  <div class="topbar-tagline">Swot Network Company · Brunei</div>
+</nav>
+
+<!-- PROGRESS TRACKER -->
+<div class="progress-wrapper">
+  <div class="progress-steps">
+    <div class="step-item active" onclick="goTo('home')" id="prog-home">
+      <div class="step-dot">⌂</div>
+      <div class="step-label">Home</div>
+    </div>
+    <div class="step-item" onclick="goTo('nda')" id="prog-nda">
+      <div class="step-dot">1</div>
+      <div class="step-label">NDA</div>
+    </div>
+    <div class="step-item" onclick="goTo('package')" id="prog-package">
+      <div class="step-dot">2</div>
+      <div class="step-label">Package</div>
+    </div>
+    <div class="step-item" onclick="goTo('strategy')" id="prog-strategy">
+      <div class="step-dot">3</div>
+      <div class="step-label">Strategy</div>
+    </div>
+    <div class="step-item" onclick="goTo('portal')" id="prog-portal">
+      <div class="step-dot">4</div>
+      <div class="step-label">Portal</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ HOME ══════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="container">
+    <div class="home-hero">
+      <div class="home-hero-tag">Swot Network Company · Brunei Darussalam</div>
+      <h1>Your marketing,<br/><em>handled end-to-end.</em></h1>
+      <p>Complete your onboarding in four steps — NDA, package selection, strategy meeting, and contract. Takes about 15 minutes.</p>
+      <button class="btn btn-primary" onclick="goTo('nda')">Start Onboarding →</button>
+    </div>
+
+    <div class="flow-steps">
+      <div class="flow-step-card" onclick="goTo('nda')">
+        <div class="flow-step-icon">📄</div>
+        <div>
+          <div class="flow-step-num">STEP 01</div>
+          <div class="flow-step-name">Sign NDA</div>
+          <div class="flow-step-desc">Confidentiality agreement before we begin.</div>
+        </div>
+      </div>
+      <div class="flow-step-card" onclick="goTo('package')">
+        <div class="flow-step-icon">📦</div>
+        <div>
+          <div class="flow-step-num">STEP 02</div>
+          <div class="flow-step-name">Choose Package</div>
+          <div class="flow-step-desc">Select the plan that fits your goals.</div>
+        </div>
+      </div>
+      <div class="flow-step-card" onclick="goTo('strategy')">
+        <div class="flow-step-icon">💬</div>
+        <div>
+          <div class="flow-step-num">STEP 03</div>
+          <div class="flow-step-name">Strategy Meeting</div>
+          <div class="flow-step-desc">Fill the survey. We prepare your report.</div>
+        </div>
+      </div>
+      <div class="flow-step-card" onclick="goTo('portal')">
+        <div class="flow-step-icon">🔍</div>
+        <div>
+          <div class="flow-step-num">STEP 04</div>
+          <div class="flow-step-name">Track Status</div>
+          <div class="flow-step-desc">Check your NDA, package, and contract.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">What's included at $0 cost</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+        <span class="badge badge-done">✓ GitHub Pages Hosting</span>
+        <span class="badge badge-done">✓ Google Forms Survey</span>
+        <span class="badge badge-done">✓ Google Sheets CRM</span>
+        <span class="badge badge-done">✓ Apps Script Automation</span>
+        <span class="badge badge-done">✓ Auto Contract Draft</span>
+        <span class="badge badge-done">✓ Google Drive Storage</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ NDA ══════════════════════════════ -->
+<div class="page" id="page-nda">
+  <div class="container">
+    <div class="page-eyebrow">Step 01 of 04</div>
+    <h1 class="page-title">Non-Disclosure<br/><em>Agreement</em></h1>
+    <p class="page-desc">Read and sign the NDA below before we discuss your business. Your information stays with SNC.</p>
+
+    <div class="nda-doc" id="ndaDoc" onscroll="checkNdaScroll()">
+      <h3>NON-DISCLOSURE AGREEMENT</h3>
+      <p>This Non-Disclosure Agreement ("Agreement") is entered into between <strong>Swot Network Company ("SNC")</strong>, a digital marketing agency registered in Brunei Darussalam, and the undersigned client ("Receiving Party").</p>
+
+      <p><strong>1. Purpose</strong><br/>
+      SNC and the Receiving Party wish to explore a potential business relationship in which SNC may share information about its services, methodologies, and strategies. Both parties agree that all such information is confidential and must be protected.</p>
+
+      <p><strong>2. Confidential Information</strong><br/>
+      "Confidential Information" includes any information disclosed by either party that is designated as confidential or that reasonably should be understood as confidential given the nature of the information, including but not limited to:</p>
+      <ol>
+        <li>Business plans, marketing strategies, and campaign data</li>
+        <li>Client lists, pricing structures, and financial information</li>
+        <li>Proprietary tools, templates, reports, and processes</li>
+        <li>Any communication between SNC and the Receiving Party</li>
+      </ol>
+
+      <p><strong>3. Obligations</strong><br/>
+      The Receiving Party agrees to: (a) keep Confidential Information strictly confidential; (b) not disclose Confidential Information to any third party without prior written consent from SNC; (c) use Confidential Information solely for the purpose of evaluating the potential business relationship.</p>
+
+      <p><strong>4. Exclusions</strong><br/>
+      Confidential Information does not include information that: (a) is or becomes publicly known through no breach of this Agreement; (b) was rightfully known by the Receiving Party prior to disclosure; (c) is required to be disclosed by law or court order.</p>
+
+      <p><strong>5. Duration</strong><br/>
+      This Agreement shall remain in effect for a period of two (2) years from the date of signing, or until such time as the Confidential Information enters the public domain through no fault of the Receiving Party.</p>
+
+      <p><strong>6. Governing Law</strong><br/>
+      This Agreement shall be governed by the laws of Brunei Darussalam. Any disputes arising under this Agreement shall be resolved through arbitration in Bandar Seri Begawan.</p>
+
+      <p><strong>7. Entire Agreement</strong><br/>
+      This Agreement constitutes the entire agreement between the parties with respect to the subject matter hereof and supersedes all prior discussions, negotiations, and agreements.</p>
+
+      <p style="margin-top:20px;color:#0B1628;font-size:12px;">By signing below, the Receiving Party acknowledges reading, understanding, and agreeing to all terms of this Agreement.</p>
+    </div>
+
+    <p class="nda-scroll-notice" id="ndaScrollNotice">↓ Please scroll to the bottom of the NDA to continue</p>
+
+    <div id="ndaForm" class="hidden">
+      <div class="card">
+        <div class="card-title">Your Details</div>
+        <div class="row">
+          <div class="form-group">
+            <label class="form-label">Full Name <span>*</span></label>
+            <input class="form-input" id="ndaName" type="text" placeholder="e.g. Siti Aminah binti Haji Omar"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company Name <span>*</span></label>
+            <input class="form-input" id="ndaCompany" type="text" placeholder="e.g. Maju Jaya Sdn Bhd"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address <span>*</span></label>
+          <input class="form-input" id="ndaEmail" type="email" placeholder="you@company.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Today's Date</label>
+          <input class="form-input" id="ndaDate" type="text" readonly/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Digital Signature</div>
+        <div class="sig-wrapper">
+          <canvas id="sigCanvas" width="620" height="140"></canvas>
+          <div class="sig-label-inside" id="sigPlaceholder">Sign here with your mouse or finger</div>
+          <div class="sig-actions">
+            <button class="sig-clear" onclick="clearSig()">Clear signature</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="ndaAgree"/>
+        <label for="ndaAgree">I have read and understood the Non-Disclosure Agreement in full, and I agree to be bound by its terms on behalf of myself and/or my company.</label>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="ndaSubmitBtn" onclick="submitNda()" disabled>
+        Sign & Proceed to Package Selection →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PACKAGE ══════════════════════════════ -->
+<div class="page" id="page-package">
+  <div class="container">
+    <div id="ndaSuccessBanner" class="success-banner hidden">
+      <div class="success-icon">✅</div>
+      <div class="success-text">
+        <strong>NDA Signed Successfully</strong>
+        <span>Your agreement has been recorded. Now choose a package.</span>
+      </div>
+    </div>
+
+    <div class="page-eyebrow">Step 02 of 04</div>
+    <h1 class="page-title">Choose Your<br/><em>Package</em></h1>
+    <p class="page-desc">Select the plan that best fits your business goals. You can discuss custom requirements in the strategy meeting.</p>
+
+    <div class="packages-grid">
+      <div class="package-card" onclick="selectPackage(this,'Starter')" data-pkg="Starter">
+        <div class="package-selected-mark"><svg viewBox="0 0 12 12" fill="none"><polyline points="1,6 4.5,9.5 11,2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="package-badge">Entry</div>
+        <div class="package-name">Starter</div>
+        <div class="package-price">From BND 300/mo</div>
+        <ul class="package-features">
+          <li>2 platforms managed</li>
+          <li>8 posts per month</li>
+          <li>Basic copywriting</li>
+          <li>Monthly report</li>
+        </ul>
+      </div>
+      <div class="package-card" onclick="selectPackage(this,'Average')" data-pkg="Average">
+        <div class="package-selected-mark"><svg viewBox="0 0 12 12" fill="none"><polyline points="1,6 4.5,9.5 11,2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="package-badge">Growth</div>
+        <div class="package-name">Average</div>
+        <div class="package-price">From BND 550/mo</div>
+        <ul class="package-features">
+          <li>3 platforms managed</li>
+          <li>12 posts per month</li>
+          <li>Creative direction</li>
+          <li>Bi-weekly reports</li>
+        </ul>
+      </div>
+      <div class="package-card" onclick="selectPackage(this,'Professional')" data-pkg="Professional">
+        <div class="package-selected-mark"><svg viewBox="0 0 12 12" fill="none"><polyline points="1,6 4.5,9.5 11,2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="package-badge">Scale</div>
+        <div class="package-name">Professional</div>
+        <div class="package-price">From BND 900/mo</div>
+        <ul class="package-features">
+          <li>4 platforms managed</li>
+          <li>20 posts per month</li>
+          <li>Paid ads included</li>
+          <li>Weekly reports</li>
+        </ul>
+      </div>
+      <div class="package-card" onclick="selectPackage(this,'Enterprise')" data-pkg="Enterprise">
+        <div class="package-selected-mark"><svg viewBox="0 0 12 12" fill="none"><polyline points="1,6 4.5,9.5 11,2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="package-badge">Full Service</div>
+        <div class="package-name">Enterprise</div>
+        <div class="package-price">From BND 1,800/mo</div>
+        <ul class="package-features">
+          <li>All platforms</li>
+          <li>Unlimited content</li>
+          <li>Dedicated manager</li>
+          <li>Real-time dashboard</li>
+        </ul>
+      </div>
+      <div class="package-card" onclick="selectPackage(this,'Custom')" data-pkg="Custom" style="grid-column: 1 / -1; flex-direction: row; display: flex; align-items: center; gap: 16px;">
+        <div class="package-selected-mark"><svg viewBox="0 0 12 12" fill="none"><polyline points="1,6 4.5,9.5 11,2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div>
+          <div class="package-badge">Tailored</div>
+          <div class="package-name">Custom</div>
+        </div>
+        <div style="flex:1">
+          <div class="package-price">Let's discuss pricing</div>
+          <p style="font-size:12px;color:var(--text-soft);">Have unique requirements? Choose Custom and we'll build a plan around your exact needs in the strategy meeting.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="pkgSelected" class="hidden">
+      <div class="success-banner">
+        <div class="success-icon">📦</div>
+        <div class="success-text">
+          <strong id="pkgSelectedName">Package Selected</strong>
+          <span>Great choice. Proceed to book your free strategy meeting.</span>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="goTo('strategy')">
+        Proceed to Strategy Meeting →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ STRATEGY ══════════════════════════════ -->
+<div class="page" id="page-strategy">
+  <div class="container">
+    <div class="page-eyebrow">Step 03 of 04</div>
+    <h1 class="page-title">Free Strategy<br/><em>Meeting</em></h1>
+    <p class="page-desc">Answer a few questions about your business. SNC will prepare a custom strategy report and reach out to walk you through it.</p>
+
+    <div class="card">
+      <div class="strategy-embed-msg">
+        <div class="strategy-icon">📋</div>
+        <h3>Fill the Strategy Survey</h3>
+        <p>Takes 5–10 minutes. Covers your business objectives, target audience, current challenges, and preferred package.</p>
+        <a class="btn btn-primary" href="https://docs.google.com/forms/d/e/1FAIpQLSf2QwHRgRAkouZgEypix1fnx7Sjl-yc5afIMmYj2LgxxdzQ2g/viewform?usp=dialog" target="_blank">
+          Open Strategy Survey →
+        </a>
+        <p style="margin-top:14px;font-size:12px;color:var(--slate);">Opens in Google Forms · 100% free · No credit card</p>
+      </div>
+    </div>
+
+    <div class="what-happens">
+      <div class="what-happens-title">What happens after you submit</div>
+      <div class="what-step">
+        <div class="what-num">1</div>
+        <div class="what-text"><strong>Your answers are saved</strong> automatically to SNC's Google Sheets.</div>
+      </div>
+      <div class="what-step">
+        <div class="what-num">2</div>
+        <div class="what-text"><strong>SNC generates your strategy report</strong> using Gemini AI — tailored to your business profile.</div>
+      </div>
+      <div class="what-step">
+        <div class="what-num">3</div>
+        <div class="what-text"><strong>SNC emails the report</strong> to you and prepares a contract draft based on your chosen package.</div>
+      </div>
+      <div class="what-step">
+        <div class="what-num">4</div>
+        <div class="what-text"><strong>Our team contacts you</strong> to walk through the strategy and finalise the agreement.</div>
+      </div>
+    </div>
+
+    <div class="mt-24">
+      <button class="btn btn-outline btn-full" onclick="markStrategyDone()">
+        ✓ I've submitted the survey
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PORTAL ══════════════════════════════ -->
+<div class="page" id="page-portal">
+  <div class="container">
+    <div class="page-eyebrow">Step 04 of 04</div>
+    <h1 class="page-title">Client<br/><em>Portal</em></h1>
+    <p class="page-desc">Track the status of your NDA, package selection, strategy form, and contract — all in one place.</p>
+
+    <div class="card">
+      <div class="card-title">Look up your status</div>
+      <div class="portal-lookup">
+        <input class="form-input" id="portalEmail" type="email" placeholder="Enter your email address"/>
+        <button class="btn btn-navy" onclick="lookupPortal()">Check Status</button>
+      </div>
+      <p style="font-size:12px;color:var(--slate);">Use the same email you provided during NDA signing. Or <a href="#" onclick="loadDemoPortal();return false;" style="color:var(--gold);">view a sample status</a>.</p>
+    </div>
+
+    <div id="portalResults" class="hidden">
+      <div class="status-card">
+        <div class="status-header">📋 Onboarding Overview</div>
+        <div class="status-rows">
+          <div class="status-row">
+            <span class="status-key">Client Name</span>
+            <span class="status-val" id="portalName">—</span>
+          </div>
+          <div class="status-row">
+            <span class="status-key">Company</span>
+            <span class="status-val" id="portalCompany">—</span>
+          </div>
+          <div class="status-row">
+            <span class="status-key">Lead ID</span>
+            <span class="status-val" id="portalLeadId">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-header">📊 Progress Status</div>
+        <div class="status-rows">
+          <div class="status-row">
+            <span class="status-key">NDA Signed</span>
+            <span id="s-nda" class="badge badge-pending">Pending</span>
+          </div>
+          <div class="status-row">
+            <span class="status-key">Package Selected</span>
+            <span id="s-pkg" class="badge badge-pending">Pending</span>
+          </div>
+          <div class="status-row">
+            <span class="status-key">Strategy Survey</span>
+            <span id="s-survey" class="badge badge-pending">Pending</span>
+          </div>
+          <div class="status-row">
+            <span class="status-key">Strategy Report</span>
+            <span id="s-report" class="badge badge-waiting">Being Prepared</span>
+          </div>
+          <div class="status-row">
+            <span class="status-key">Contract Draft</span>
+            <span id="s-contract" class="badge badge-waiting">Awaiting Report</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card text-center">
+        <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px;">Need help? Reach out to the SNC team directly.</p>
+        <a class="btn btn-navy" href="https://wa.me/6738XXXXXX" target="_blank">💬 WhatsApp SNC</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+const state = {
+  ndaDone: false,
+  ndaName: '',
+  ndaCompany: '',
+  ndaEmail: '',
+  packageDone: false,
+  packageName: '',
+  strategyDone: false,
+};
+
+// ── NAVIGATION ──
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('prog-' + id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── PROGRESS DOTS ──
+function updateProgress() {
+  const ids = ['home','nda','package','strategy','portal'];
+  const doneMap = { nda: state.ndaDone, package: state.packageDone, strategy: state.strategyDone };
+  ids.forEach(id => {
+    const el = document.getElementById('prog-' + id);
+    el.classList.remove('done');
+    if (doneMap[id]) el.classList.add('done');
+  });
+}
+
+// ── NDA SCROLL CHECK ──
+let ndaScrolled = false;
+function checkNdaScroll() {
+  const doc = document.getElementById('ndaDoc');
+  if (!ndaScrolled && doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 20) {
+    ndaScrolled = true;
+    document.getElementById('ndaScrollNotice').style.display = 'none';
+    document.getElementById('ndaForm').classList.remove('hidden');
+    document.getElementById('ndaDate').value = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+    initCanvas();
+    setupNdaValidation();
+  }
+}
+
+// ── SIGNATURE CANVAS ──
+let drawing = false, hasSig = false;
+function initCanvas() {
+  const canvas = document.getElementById('sigCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#0B1628';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Resize canvas to wrapper width
+  const wrapper = canvas.parentElement;
+  canvas.width = wrapper.clientWidth;
+  canvas.height = 140;
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  }
+  canvas.addEventListener('mousedown', e => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+  canvas.addEventListener('mousemove', e => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); hasSig = true; document.getElementById('sigPlaceholder').style.opacity = '0'; validateNda(); });
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); }, { passive: false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); hasSig = true; document.getElementById('sigPlaceholder').style.opacity = '0'; validateNda(); }, { passive: false });
+  canvas.addEventListener('touchend', () => drawing = false);
+}
+
+function clearSig() {
+  const canvas = document.getElementById('sigCanvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  hasSig = false;
+  document.getElementById('sigPlaceholder').style.opacity = '1';
+  validateNda();
+}
+
+// ── NDA VALIDATION ──
+function setupNdaValidation() {
+  ['ndaName','ndaCompany','ndaEmail'].forEach(id => document.getElementById(id).addEventListener('input', validateNda));
+  document.getElementById('ndaAgree').addEventListener('change', validateNda);
+}
+function validateNda() {
+  const name = document.getElementById('ndaName').value.trim();
+  const company = document.getElementById('ndaCompany').value.trim();
+  const email = document.getElementById('ndaEmail').value.trim();
+  const agreed = document.getElementById('ndaAgree').checked;
+  document.getElementById('ndaSubmitBtn').disabled = !(name && company && email && hasSig && agreed);
+}
+function submitNda() {
+  state.ndaDone = true;
+  state.ndaName = document.getElementById('ndaName').value.trim();
+  state.ndaCompany = document.getElementById('ndaCompany').value.trim();
+  state.ndaEmail = document.getElementById('ndaEmail').value.trim();
+  updateProgress();
+  goTo('package');
+  document.getElementById('ndaSuccessBanner').classList.remove('hidden');
+  showToast('NDA signed successfully ✓');
+}
+
+// ── PACKAGE SELECTION ──
+function selectPackage(el, name) {
+  document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.packageDone = true;
+  state.packageName = name;
+  updateProgress();
+  document.getElementById('pkgSelected').classList.remove('hidden');
+  document.getElementById('pkgSelectedName').textContent = name + ' Package Selected';
+}
+
+// ── STRATEGY ──
+function markStrategyDone() {
+  state.strategyDone = true;
+  updateProgress();
+  showToast('Survey marked as submitted ✓');
+  setTimeout(() => goTo('portal'), 900);
+}
+
+// ── PORTAL ──
+function lookupPortal() {
+  const email = document.getElementById('portalEmail').value.trim();
+  if (!email) { showToast('Please enter your email'); return; }
+  if (email.toLowerCase() === state.ndaEmail.toLowerCase() && state.ndaEmail) {
+    showPortalData(state.ndaName, state.ndaCompany);
+  } else {
+    showToast('No record found. Try the sample view.');
+  }
+}
+function loadDemoPortal() {
+  showPortalData('Siti Aminah binti Omar', 'Maju Jaya Sdn Bhd');
+}
+function showPortalData(name, company) {
+  document.getElementById('portalName').textContent = name || '—';
+  document.getElementById('portalCompany').textContent = company || '—';
+  document.getElementById('portalLeadId').textContent = 'SNC-' + Math.random().toString(36).substring(2,7).toUpperCase();
+
+  const setStatus = (id, done, label, cls) => {
+    const el = document.getElementById(id);
+    el.textContent = label;
+    el.className = 'badge ' + cls;
+  };
+  setStatus('s-nda',      state.ndaDone,      state.ndaDone ? 'Signed' : 'Pending',   state.ndaDone ? 'badge-done' : 'badge-pending');
+  setStatus('s-pkg',      state.packageDone,  state.packageDone ? state.packageName : 'Pending', state.packageDone ? 'badge-done' : 'badge-pending');
+  setStatus('s-survey',   state.strategyDone, state.strategyDone ? 'Submitted' : 'Pending', state.strategyDone ? 'badge-done' : 'badge-pending');
+  setStatus('s-report',   false, state.strategyDone ? 'In Progress' : 'Awaiting Survey', state.strategyDone ? 'badge-waiting' : 'badge-pending');
+  setStatus('s-contract', false, 'Pending Report', 'badge-pending');
+
+  document.getElementById('portalResults').classList.remove('hidden');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
